@@ -33,8 +33,8 @@ class King(Piece):
     def get_name(self):
         return "K"
 
-    def get_moves(self):
-        return None
+    def get_moves(board):
+        return 
 
 
 class Queen(Piece):
