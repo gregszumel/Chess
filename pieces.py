@@ -1,12 +1,13 @@
-
-
 class Piece(object):
     def __init__(self, color):
         self.color = color
-        self.position = [None,None]
+        self.x = None
+        self.y = None
+        self.taken = False
 
-    def set_position(self, pos_x, pos_y):
-        self.position = [pos_x, pos_y]
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
 
     def get_name(self):
         pass
@@ -20,6 +21,10 @@ class Piece(object):
     def get_moves(self):
         return None
 
+    def taken(self):
+        self.taken = True
+
+
 class King(Piece):
 
     def __init__(self, color):
@@ -31,6 +36,7 @@ class King(Piece):
     def get_moves(self):
         return None
 
+
 class Queen(Piece):
 
     def __init__(self, color):
@@ -41,7 +47,6 @@ class Queen(Piece):
 
     def get_moves(self):
         return None
-
 
 
 class Rook(Piece):
@@ -90,8 +95,3 @@ class Pawn(Piece):
 
     def get_moves(self):
         return None
-
-
-
-x = King("B")
-x.get_position()
