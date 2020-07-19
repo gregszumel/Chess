@@ -1,11 +1,18 @@
+# print(" . ".join([str(x) for x in range(0,10)]))
+
+
+
 from chessboard import *
 
-board = ChessBoard()
-board.print_board()
-print("")
+board = ChessBoard(test= "test")
+# board.initialize_piece(Bishop("W"), 4, 4)
+print(board)
 
-print(to_move.get_position())
-board.move_piece(to_move, 2,5)
-board.print_board()
-for piece in board.piece_list:
-    print(piece.get_color() + "-" + piece.get_name())
+# for piece,moveset in board.get_moves().items():
+#     print(str(piece) + ": " +str(piece.x) + ", " + str(piece.y))
+#     print(moveset)
+board.initialize_piece(Pawn("W"), 4, 3)
+board.initialize_piece(King("W"), 4, 4)
+board.initialize_piece(Queen("W"), 4, 5)
+board.initialize_piece(Knight("W"), 4, 6)
+print(board)
