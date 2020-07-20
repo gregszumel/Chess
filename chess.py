@@ -1,18 +1,18 @@
 # print(" . ".join([str(x) for x in range(0,10)]))
-
-
-
 from chessboard import *
+import random
 
-board = ChessBoard(test= "test")
-# board.initialize_piece(Bishop("W"), 4, 4)
-print(board)
+board = ChessBoard()
 
-# for piece,moveset in board.get_moves().items():
-#     print(str(piece) + ": " +str(piece.x) + ", " + str(piece.y))
-#     print(moveset)
-board.initialize_piece(Pawn("W"), 4, 3)
-board.initialize_piece(King("W"), 4, 4)
-board.initialize_piece(Queen("W"), 4, 5)
-board.initialize_piece(Knight("W"), 4, 6)
-print(board)
+
+for x in range(0,1000000):
+    system('clear')
+
+    potential_moves = board.get_moves()
+
+    piece, move = board.take_turn()
+    print(board)
+    for combo in sorted(potential_moves):
+        print(combo)
+    print("Selected move: "+ str([piece, move]))
+    input()
