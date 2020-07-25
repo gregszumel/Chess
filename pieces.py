@@ -63,7 +63,7 @@ class Piece():
     # on a board is valid, and the value
         x_dir, y_dir = direction
         if 0 <= x+x_dir < 8 and 0 <= y+y_dir < 8:
-            new_pos = board.get(x+x_dir, y + y_dir)
+            new_pos = board[y + y_dir][x+x_dir]
             if new_pos is None or new_pos.color != self.color:
                 return True, new_pos
             else:
