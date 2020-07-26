@@ -7,12 +7,10 @@ class ChessBoard():
         self.board = [[None for i in range (0,8)] for j in range(0,8)]
         self.turn = "W"
         self.piece_set = set()
-        self.king_pos = {}
         if test == False: self.setup_board()
         print("The game has started!")
 
     def __str__(self):
-
         repr = ""
         for y in reversed(range(0,8)):
             repr += "  "+ str(y) +"  "
@@ -25,33 +23,31 @@ class ChessBoard():
         repr += "       "+ "    ".join([str(num) for num in range(0,8)])
         return repr
 
-    def initialize_piece(self, piece, new_pos_x, new_pos_y):
-        self.piece_set.add(piece)
-        if str(piece) == "W-K":
-            king_pos[str(piece)] = [new_pos_x, new_pos_y]
-        elif str(piece) == "B-K":
-            king_pos[str(piece)] = [new_pos_x, new_pos_y]
-        self.board[new_pos_y][new_pos_x] = piece
-        piece.set_position(new_pos_x, new_pos_y)
-        piece.moved = False
-
-    def change_turn(self):
-        self.turn = "W" if self.turn == "B" else "B"
+    def get_other_turn(self):
+        if self.turn == "B":
+            return "W"
+        else:
+            return "B"
 
     def get(self, x, y):
         return self.board[y][x]
 
-    def move_piece(self, piece, new_pos_x, new_pos_y):
+    def move_piece(self, piece, new_pos_x, new_pos_y, board):
         ##set old position to None
-        self.board[piece.y][piece.x] = None
-
+        board[piece.y][piece.x] = None
         ##if piece is being taken, set the piece as taken
-        if self.get(new_pos_x, new_pos_y) != None:
-            self.get(new_pos_x,new_pos_y).taken == True
+        if board.get(new_pos_x, new_pos_y) != None:
+            board.get(new_pos_x,new_pos_y).taken == True
+            self.piece_set.remove(board.get(new_pos_x,new_pos_y))
+        board[new_pos_y][new_pos_x] = piece
+        piece.set_position(new_pos_x, new_pos_y)
+        return board
 
+    def initialize_piece(self, piece, new_pos_x, new_pos_y):
+        self.piece_set.add(piece)
         self.board[new_pos_y][new_pos_x] = piece
         piece.set_position(new_pos_x, new_pos_y)
-        self.change_turn()
+        piece.moved = False
 
     def setup_board(self):
         ## add pieces to the board and set up empty-square tracker
@@ -67,39 +63,3 @@ class ChessBoard():
         for letter,y in zip(["W", "B"],[1,6] ):
             for x in range(0,8):
                 self.initialize_piece(Pawn(letter),x, y)
-
-    def take_turn(self):
-        piece, move = random.choice(self.get_moves())
-        piece_repr = str(piece), piece.x, piece.y
-        self.move_piece(piece, move.x, move.y)
-        return piece_repr, move
-
-    def get_moves(self):
-        self.moves = []
-        for piece in self.piece_set:
-            if piece.get_color() == self.turn:
-                self.piece_moves = piece.get_moves(self.board)
-                if self.piece_moves:
-                    self.moves.extend(
-                        [(piece, move) for move in self.piece_moves])
-        return self.non_check_moves(moves, board)
-
-    def non_check_moves(moves, board):
-        for move in moves:
-            piece, moveset = move
-            if piece.get_name() == "K":
-                king_x, king_y = king_pos[str(piece)]
-                king_x, king_y = king_x + moveset.x, king_y +moveset.y
-            else:
-                #self.turn should not have changed yet, this is for calculating
-                #the same colors turn possibilites, given opponents follow-up
-                #moves
-                king_x, king_y = king_pos[self.turn +"-K"]
-
-            opp_moves = self.get_future_state(piece, moveset, board)
-            if ("Take", king_x, king_y) in opp_moves:
-                pass
-        return
-
-    def get_future_state(self, move, board):
-        pass
