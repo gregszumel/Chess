@@ -4,51 +4,57 @@ import random
 
 # Class to play a game of chess
 class Chess():
-    def non_check_moves(moves, board):
-        for move in moves:
-            piece, moveset = move
-            if piece.get_name() == "K":
-                king_x, king_y = king_pos[str(piece)]
-                king_x, king_y = king_x + moveset.x, king_y +moveset.y
-            else:
-                #self.turn should not have changed yet, this is for
-                #calculating the same colors turn possibilites, given
-                #opponents follow-up moves
-                king_x, king_y = king_pos[self.turn +"-K"]
-            opp_moves = self.get_future_state(piece, moveset, board)
-            if ("Take", king_x, king_y) in opp_moves:
-                moves.remove(move)
+
+    def __init__(self):
+        self.game_state = ChessBoard()
+        self.turn = "W"
+
+    def get_other_turn(self):
+        if self.turn == "B":
+            return "W"
+        else:
+            return "B"
+
+    def get_moves(self, turn):
+        #takes a game state and returns the possible set of moves
+        board = self.game_state.board
+        moves = []
+        for piece in self.game_state.piece_set:
+            if piece.get_color() == turn:
+                piece_moves = piece.get_moves(board)
+                if piece_moves:
+                    moves.extend(
+                        [(piece, move) for move in piece_moves])
         return moves
 
-    def get_future_state(self, piece, move, board):
-        new_board = self.move_piece(piece, move.x, move.y, board)
-        new_turn = new_board.get_other_turn()
-        return new_board.get_moves(board = new_board, turn = new_turn)
+    def get_opponent_moves(self, piece, move):
+        #makes a move, checks to see what the opponent moves are,
+        #undoes move
+        self.game_state.move_piece(piece, move.x, move.y)
+        moves = self.get_moves(self.get_other_turn())
+        self.game_state.undo_move()
+        return moves
+
+    def non_check_moves(self, moves):
+        #takes a set of moves and evaluates if those moves allow the
+        #king to be captured next move
+        non_check_moves = []
+        for piece, move in moves:
+            opp_moves = self.get_opponent_moves(piece, move)
+            for _, opp_move in opp_moves:
+                if (move.movetype == "Take" and
+                    str(self.game_state.get(move.x, move.y))[-1] != "K"):
+                    non_check_moves.append((piece, move))
+        return non_check_moves
+
+    def get_legal_moves(self):
+        all_moves = self.get_moves(self.turn)
+        return self.non_check_moves(all_moves)
 
     def take_turn(self):
-        piece, move = random.choice(self.get_moves())
+        piece, move = random.choice(self.get_moves(self.turn))
         piece_repr = str(piece), piece.x, piece.y
-        self.board = self.move_piece(piece = piece, new_pos_x= move.x,
-            new_pos_y = move.y, board = self.board)
+        self.board = self.game_state.move_piece(piece = piece,
+            new_pos_x= move.x, new_pos_y = move.y)
         self.turn = self.get_other_turn()
         return piece_repr, move
-
-    def get_moves(self, board, turn):
-        moves = []
-        for piece in self.piece_set:
-            if piece.get_color() == turn:
-                self.piece_moves = piece.get_moves(board)
-                if self.piece_moves:
-                    self.moves.extend(
-                        [(piece, move) for move in self.piece_moves])
-        return self.non_check_moves(moves, board)
-
-    def get_moves(self):
-        moves = []
-        for piece in self.piece_set:
-            if piece.get_color() == self.turn:
-                self.piece_moves = piece.get_moves(self.board)
-                if self.piece_moves:
-                    self.moves.extend(
-                        [(piece, move) for move in self.piece_moves])
-        return self.non_check_moves(moves, board)
