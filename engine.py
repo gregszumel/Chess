@@ -43,7 +43,6 @@ class Chess():
             opp_moves = self.get_opponent_moves(piece, move)
             for _, opp_move in opp_moves:
                 if opp_move.movetype == "Take":
-                    print(opp_move)
                     if piece.get_name() != "K":
                         non_check_moves.append((piece, move))
                 else:
@@ -52,8 +51,6 @@ class Chess():
 
     def get_legal_moves(self):
         all_moves = self.get_moves(self.turn)
-        print(all_moves)
-        print(self.non_check_moves(all_moves))
         return self.non_check_moves(all_moves)
 
     def take_turn(self):
