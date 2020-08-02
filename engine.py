@@ -42,17 +42,22 @@ class Chess():
         for piece, move in moves:
             opp_moves = self.get_opponent_moves(piece, move)
             for _, opp_move in opp_moves:
-                if (move.movetype == "Take" and
-                    str(self.game_state.get(move.x, move.y))[-1] != "K"):
+                if opp_move.movetype == "Take":
+                    print(opp_move)
+                    if piece.get_name() != "K":
+                        non_check_moves.append((piece, move))
+                else:
                     non_check_moves.append((piece, move))
         return non_check_moves
 
     def get_legal_moves(self):
         all_moves = self.get_moves(self.turn)
+        print(all_moves)
+        print(self.non_check_moves(all_moves))
         return self.non_check_moves(all_moves)
 
     def take_turn(self):
-        piece, move = random.choice(self.get_moves(self.turn))
+        piece, move = random.choice(self.get_legal_moves())
         piece_repr = str(piece), piece.x, piece.y
         self.board = self.game_state.move_piece(piece = piece,
             new_pos_x= move.x, new_pos_y = move.y)
