@@ -1,78 +1,77 @@
 "use client";
 
-import { useDrag, DragPreviewImage, DndProvider } from "react-dnd";
-import { FC } from "react";
+import { useState, useEffect } from "react";
 import knight from "./Chess_KnightDark.svg";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
-const ItemTypes = { KNIGHT: "knight" };
+export default function Board() {
+  const [knightCoordinates, setKnightCoordinates] = useState([0, 0]);
 
-export default function Home() {
-  return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="h-full">
-        Name 1: Score
-        <div className="flex">
-          <Knight />
-          <Board />
-          <div> MovesList</div>
-        </div>
-        Name 2: Score
-      </div>
-    </DndProvider>
-  );
-}
-
-const Knight: FC = () => {
-  const [{ isDragging }, drag, preview] = useDrag(
-    () => ({
-      type: ItemTypes.KNIGHT,
-      collect: (monitor) => ({
-        isDragging: !!monitor.isDragging(),
-      }),
-    }),
-    []
-  );
-
-  return (
-    <>
-      <div
-        ref={drag}
-        style={{
-          opacity: isDragging ? 0.5 : 1,
-          fontSize: 25,
-          fontWeight: "bold",
-          cursor: "move",
-        }}
-      >
-        ♘
-      </div>
-      ,
-    </>
-  );
-};
-
-function Board() {
-  const rows = [];
-  for (let i = 0; i < 8; i++) {
-    rows.push(<Row isEven={i % 2 == 0} />);
+  function handleKnightMove([toX, toY]: [toX: number, toY: number]) {
+    if (canMoveKnight([toX, toY])) {
+      setKnightCoordinates([toX, toY]);
+    }
   }
-  return <div>{rows}</div>;
-}
+  function canMoveKnight([toX, toY]: [toX: number, toY: number]) {
+    const [x, y] = knightCoordinates;
+    const dx = toX - x;
+    const dy = toY - y;
 
-function Row({ isEven }: { isEven: boolean }) {
-  const row = [];
-  for (let i = 0; i < 8; i++) {
-    row.push(<Square color={(i + +isEven) % 2 == 0 ? "white" : "black"} />);
+    return (
+      (Math.abs(dx) === 2 && Math.abs(dy) === 1) ||
+      (Math.abs(dx) === 1 && Math.abs(dy) === 2)
+    );
   }
-  return <div className="flex ">{row}</div>;
+
+  const squares = [];
+  for (var i = 0; i < 64; i++) {
+    squares.push(
+      <Square
+        i={i}
+        handleSquareClick={handleKnightMove}
+        knightCoordinates={knightCoordinates}
+      />
+    );
+  }
+
+  return (
+    <div className="h-96 w-96">
+      <div className="grid h-full w-full auto-rows-fr grid-cols-8 grid-rows-8">
+        {squares}
+      </div>
+    </div>
+  );
 }
 
-function Square({ color }: { color: string }) {
-  const cn =
-    color === "white"
-      ? "border w-28 h-28 bg-gray-600"
-      : "border w-28 h-28 bg-gray-900";
-  console.log(cn);
-  return <div className={cn}></div>;
+function Square({
+  i,
+  knightCoordinates,
+  handleSquareClick,
+}: {
+  i: number;
+  knightCoordinates: number[];
+  handleSquareClick: Function;
+}) {
+  const x = i % 8;
+  const y = Math.floor(i / 8);
+  const isKnightHere = x === knightCoordinates[0] && y === knightCoordinates[1];
+  const black = (x + y) % 2 === 1;
+  const piece = isKnightHere ? <Knight /> : null;
+  const cn = black ? "bg-slate-500 " : "bg-slate-200 ";
+
+  return (
+    <div onClick={() => handleSquareClick([x, y])} className={cn}>
+      {piece}
+    </div>
+  );
+}
+
+function Knight() {
+  return (
+    <img
+      src={knight.src}
+      onDragStart={(e) => {
+        e.preventDefault();
+      }}
+    />
+  );
 }
