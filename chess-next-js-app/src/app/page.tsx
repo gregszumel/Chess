@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import { Piece, useGameState } from "./game";
 import {
   KD,
   QD,
@@ -16,131 +17,73 @@ import {
   PL,
 } from "./Pieces/pieces";
 
-interface Piece {
-  type: string;
-  player: number;
-}
-
-const initialPieces: Piece[][] = [
-  [
-    { type: "rook", player: 2 },
-    { type: "knight", player: 2 },
-    { type: "bishop", player: 2 },
-    { type: "queen", player: 2 },
-    { type: "king", player: 2 },
-    { type: "bishop", player: 2 },
-    { type: "knight", player: 2 },
-    { type: "rook", player: 2 },
-  ],
-  [
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-    { type: "pawn", player: 2 },
-  ],
-  [
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-  ],
-  [
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-  ],
-  [
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-  ],
-  [
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-    { type: "empty", player: -1 },
-  ],
-  [
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-    { type: "pawn", player: 1 },
-  ],
-  [
-    { type: "rook", player: 1 },
-    { type: "knight", player: 1 },
-    { type: "bishop", player: 1 },
-    { type: "queen", player: 1 },
-    { type: "king", player: 1 },
-    { type: "bishop", player: 1 },
-    { type: "knight", player: 1 },
-    { type: "rook", player: 1 },
-  ],
-];
-
-function useGameState() {
-  const [pieces, setPieces] = useState(initialPieces);
-  const [player1Next, setPlayer1Next] = useState(true);
-
-  const makeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
-    console.log(fromX, fromY, toX, toY);
-    setPlayer1Next((prev) => !prev);
-  };
-
-  return [pieces, player1Next, makeMove];
-}
-
 export default function Home() {
   const squares = [];
-  const [pieces, player1Next, setGameState] = useGameState();
+  const [pieces, player1Next, nextMove] = useGameState();
+  const [selectedPiece, setSelectedPiece] = useState(null);
 
   for (var i = 0; i < 64; i++) {
-    squares.push(renderSquare(i, pieces));
+    squares.push(
+      renderSquare(
+        i,
+        pieces,
+        player1Next,
+        nextMove,
+        selectedPiece,
+        setSelectedPiece
+      )
+    );
   }
 
   return (
-    <div className="w-96 h-96">
-      <div className="grid place-items-center w-full h-full grid-cols-8 grid-rows-8">
-        {squares}
+    <div>
+      <div className="text-sm">
+        {player1Next ? "Player 1's turn" : "Player 2's turn"}
+      </div>
+      <div className="w-96 h-96">
+        <div className="grid place-items-center w-full h-full grid-cols-8 grid-rows-8">
+          {squares}
+        </div>
       </div>
     </div>
   );
 }
 
-function renderSquare(i: number, pieces: any) {
+function renderSquare(
+  i: number,
+  pieces: Piece[][],
+  player1Next: boolean,
+  nextMove: Function,
+  selectedPiece: number[] | null,
+  setSelectedPiece: Function
+) {
   const x = i % 8;
   const y = Math.floor(i / 8);
   const black = (x + y) % 2 === 1;
+  const piece = pieces[x][y];
+  const currPlayersPiece = (piece.player == 1) == player1Next;
+
+  function handleSquareClick() {
+    // set/change selectedPiece
+    // TODO: don't allow jump overs
+    if (piece.type != "empty" && currPlayersPiece) {
+      setSelectedPiece([x, y]);
+    } else if (selectedPiece && (piece.type == "empty" || !currPlayersPiece)) {
+      console.log("move!");
+      nextMove(selectedPiece[0], selectedPiece[1], x, y);
+      setSelectedPiece(null);
+    }
+  }
 
   return (
-    <div key={i}>
-      <Square black={black}>{renderPiece(pieces[y][x])}</Square>
+    <div key={i} className="relative" onClick={handleSquareClick}>
+      <Square black={black}>{renderPiece(piece)}</Square>
+      {selectedPiece && selectedPiece[0] == x && selectedPiece[1] == y && (
+        <div
+          className="absolute left-0 top-0 h-full w-full opacity-50 
+      bg-yellow-800"
+        />
+      )}
     </div>
   );
 }
