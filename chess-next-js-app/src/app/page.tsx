@@ -1,178 +1,188 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
-import knight from "./Chess_KnightDark.svg";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useState, ReactNode } from "react";
+import {
+  KD,
+  QD,
+  BD,
+  ND,
+  RD,
+  PD,
+  KL,
+  QL,
+  BL,
+  NL,
+  RL,
+  PL,
+} from "./Pieces/pieces";
 
-export default function Board() {
-  const [knightCoordinates, setKnightCoordinates] = useState([0, 0]);
-  useEffect(() => {
-    console.log("use effect knight coordinates: ", knightCoordinates);
-  });
+interface Piece {
+  type: string;
+  player: number;
+}
 
-  function handleKnightMove(toX: number, toY: number) {
-    console.log(
-      "handle knight move with ",
-      toX,
-      toY,
-      "from",
-      knightCoordinates
-    );
-    if (canMoveKnight(toX, toY)) {
-      console.log("updating knight coordinates");
-      setKnightCoordinates([toX, toY]);
-    }
-  }
+const initialPieces: Piece[][] = [
+  [
+    { type: "rook", player: 2 },
+    { type: "knight", player: 2 },
+    { type: "bishop", player: 2 },
+    { type: "queen", player: 2 },
+    { type: "king", player: 2 },
+    { type: "bishop", player: 2 },
+    { type: "knight", player: 2 },
+    { type: "rook", player: 2 },
+  ],
+  [
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+    { type: "pawn", player: 2 },
+  ],
+  [
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+  ],
+  [
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+  ],
+  [
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+  ],
+  [
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+    { type: "empty", player: -1 },
+  ],
+  [
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+    { type: "pawn", player: 1 },
+  ],
+  [
+    { type: "rook", player: 1 },
+    { type: "knight", player: 1 },
+    { type: "bishop", player: 1 },
+    { type: "queen", player: 1 },
+    { type: "king", player: 1 },
+    { type: "bishop", player: 1 },
+    { type: "knight", player: 1 },
+    { type: "rook", player: 1 },
+  ],
+];
 
-  function canMoveKnight(toX: number, toY: number) {
-    const [x, y] = knightCoordinates;
-    const dx = toX - x;
-    const dy = toY - y;
+function useGameState() {
+  const [pieces, setPieces] = useState(initialPieces);
+  const [player1Next, setPlayer1Next] = useState(true);
 
-    return (
-      (Math.abs(dx) === 2 && Math.abs(dy) === 1) ||
-      (Math.abs(dx) === 1 && Math.abs(dy) === 2)
-    );
-  }
+  const makeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
+    console.log(fromX, fromY, toX, toY);
+    setPlayer1Next((prev) => !prev);
+  };
 
+  return [pieces, player1Next, makeMove];
+}
+
+export default function Home() {
   const squares = [];
+  const [pieces, player1Next, setGameState] = useGameState();
+
   for (var i = 0; i < 64; i++) {
-    squares.push(
-      renderSquare(i, handleKnightMove, canMoveKnight, [
-        knightCoordinates[0],
-        knightCoordinates[1],
-      ])
-    );
+    squares.push(renderSquare(i, pieces));
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="h-96 w-96">
-        <div
-          className="grid h-full w-full auto-rows-fr grid-cols-8 grid-rows-8
-       place-items-center"
-        >
-          {squares}
-        </div>
+    <div className="w-96 h-96">
+      <div className="grid place-items-center w-full h-full grid-cols-8 grid-rows-8">
+        {squares}
       </div>
-    </DndProvider>
+    </div>
   );
 }
 
-function renderSquare(
-  i: number,
-  handleKnightMove: Function,
-  canMoveKnight: Function,
-  [knightX, knightY]: [knightX: number, knightY: number]
-) {
+function renderSquare(i: number, pieces: any) {
   const x = i % 8;
   const y = Math.floor(i / 8);
+  const black = (x + y) % 2 === 1;
+
   return (
     <div key={i}>
-      <BoardSquare
-        x={x}
-        y={y}
-        knightX={knightX}
-        knightY={knightY}
-        moveKnight={handleKnightMove}
-        canMoveKnight={canMoveKnight}
-      >
-        {renderPiece(x, y, [knightX, knightY])}
-      </BoardSquare>
+      <Square black={black}>{renderPiece(pieces[y][x])}</Square>
     </div>
   );
 }
 
-function renderPiece(
-  x: number,
-  y: number,
-  [knightX, knightY]: [knightX: number, knightY: number]
-) {
-  if (x == knightX && y == knightY) {
-    return <Knight x={x} y={y} />;
+function renderPiece(piece: Piece) {
+  function getPieceImg(piece: Piece) {
+    if (piece.type == "king" && piece.player == 2) {
+      return <KD />;
+    } else if (piece.type == "queen" && piece.player == 2) {
+      return <QD />;
+    } else if (piece.type == "bishop" && piece.player == 2) {
+      return <BD />;
+    } else if (piece.type == "knight" && piece.player == 2) {
+      return <ND />;
+    } else if (piece.type == "rook" && piece.player == 2) {
+      return <RD />;
+    } else if (piece.type == "pawn" && piece.player == 2) {
+      return <PD />;
+    } else if (piece.type == "king" && piece.player == 1) {
+      return <KL />;
+    } else if (piece.type == "queen" && piece.player == 1) {
+      return <QL />;
+    } else if (piece.type == "bishop" && piece.player == 1) {
+      return <BL />;
+    } else if (piece.type == "knight" && piece.player == 1) {
+      return <NL />;
+    } else if (piece.type == "rook" && piece.player == 1) {
+      return <RL />;
+    } else if (piece.type == "pawn" && piece.player == 1) {
+      return <PL />;
+    }
+    return "error";
   }
-}
-
-function BoardSquare({
-  x,
-  y,
-  knightX,
-  knightY,
-  moveKnight,
-  canMoveKnight,
-  children,
-}: {
-  x: number;
-  y: number;
-  knightX: number;
-  knightY: number;
-  moveKnight: Function;
-  canMoveKnight: Function;
-  children?: ReactNode;
-}) {
-  const black = (x + y) % 2 == 1;
-  const [{ isOver, canDrop }, drop] = useDrop(
-    () => ({
-      accept: ItemTypes.KNIGHT,
-      drop: () => moveKnight(x, y),
-      canDrop: () => canMoveKnight(x, y),
-      collect: (monitor) => ({
-        isOver: !!monitor.isOver(),
-        canDrop: !!monitor.canDrop(),
-      }),
-    }),
-    [knightX, knightY]
-  );
-
-  const cn = isOver
-    ? "absolute opacity-50 left-0 top-0 bg-black w-full h-full"
-    : "";
-
   return (
-    <div ref={drop} className="relative">
-      <Square black={black}> {children} </Square>
-      {isOver && !canDrop && <Overlay color="red" />}
-      {isOver && canDrop && <Overlay color="green" />}
-      {!isOver && canDrop && <Overlay color="yellow" />}
+    <div className="w-full h-full flex items-center justify-center">
+      {piece.type != "empty" && getPieceImg(piece)}
     </div>
-  );
-}
-
-function Overlay({ color }: { color: string }) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        height: "100%",
-        width: "100%",
-        opacity: 0.5,
-        backgroundColor: color,
-      }}
-    />
   );
 }
 
 function Square({ black, children }: { black: boolean; children: ReactNode }) {
   const cn = black ? "bg-slate-500 h-12 w-12" : "bg-slate-200 h-12 w-12";
+
   return <div className={cn}> {children} </div>;
-}
-
-const ItemTypes = {
-  KNIGHT: "knight",
-};
-
-function Knight({ x, y }: { x: number; y: number }) {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: ItemTypes.KNIGHT,
-    collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
-    }),
-  }));
-
-  const cn = isDragging ? "opacity-50" : "opacity-100";
-
-  return <img ref={drag} src={knight.src} className={cn} />;
 }
